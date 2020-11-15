@@ -61,11 +61,11 @@ async function run() {
     }
 
     case "set": {
-      if (!params[1]) {
+      if (!params[0]) {
         throw new UserError(`Usage: version set <version>`);
       }
 
-      await writeVersion(params[1]);
+      await writeVersion(params[0]);
       break;
     }
 
