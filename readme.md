@@ -13,7 +13,7 @@ A lightweight replacement for `npm version`;
 
 ```
 # Create a `VERSION` file
-$ deno run -A init
+$ deno run -A https://deno.land/x/version/index.ts init
 
 # Increment a version
 $ deno run -A https://deno.land/x/version/index.ts patch
