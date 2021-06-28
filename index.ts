@@ -1,4 +1,4 @@
-import { inc, valid } from "https://deno.land/x/semver@v1.0.0/mod.ts";
+import { inc, valid } from "https://deno.land/x/semver@v1.4.0/mod.ts";
 
 import UserError from "./user-error.ts";
 import { checkPrerequisites, commitAndTag } from "./git.ts";
@@ -11,9 +11,13 @@ async function readVersion(): Promise<string> {
   try {
     content = await Deno.readTextFile(fileName);
   } catch (err) {
-    throw new UserError(
-      `Could not read ${fileName} file. Run \`version init\` to create one`,
-    );
+    if (err instanceof Deno.errors.PermissionDenied) {
+      throw err;
+    } else {
+      throw new UserError(
+        `Could not read ${fileName} file. Run \`version init\` to create one`,
+      );
+    }
   }
 
   if (!valid(content)) {
@@ -43,6 +47,7 @@ enum Actions {
   patch = "patch",
   init = "init",
   set = "set",
+  get = "get",
 }
 
 const allowedActions = Object.keys(Actions);
@@ -57,6 +62,12 @@ async function run() {
     case "init": {
       const version = "1.0.0";
       await writeVersion(version);
+      break;
+    }
+
+    case "get": {
+      const currentVersion = await readVersion();
+      console.log(currentVersion);
       break;
     }
 
@@ -90,7 +101,10 @@ async function run() {
 try {
   await run();
 } catch (err) {
-  if (err instanceof UserError) {
+  if (err instanceof Deno.errors.PermissionDenied) {
+    console.error(err.message);
+    Deno.exit(1);
+  } else if (err instanceof UserError) {
     console.error(`Error: ${err.message}`);
     Deno.exit(1);
   }
