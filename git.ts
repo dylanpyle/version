@@ -1,5 +1,12 @@
 import UserError from "./user-error.ts";
 
+export class GitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GitError";
+  }
+}
+
 async function runCommand(...args: string[]): Promise<string> {
   const cmd = Deno.run({
     cmd: ["git", ...args],
@@ -17,7 +24,9 @@ async function runCommand(...args: string[]): Promise<string> {
   cmd.close();
 
   if (code !== 0) {
-    throw new Error(`Git error: ${stderrString}`);
+    throw new GitError(
+      `Failed to run \`git ${args.join(" ")}\`: ${stderrString}`,
+    );
   }
 
   return stdoutString;
@@ -31,8 +40,11 @@ export async function checkPrerequisites(): Promise<void> {
   }
 }
 
-export async function commitAndTag(version: string, fileName: string) {
+export async function commitAndTag(
+  normalizedVersion: string,
+  fileName: string,
+) {
   await runCommand("add", fileName);
-  await runCommand("commit", "-m", version);
-  await runCommand("tag", version);
+  await runCommand("commit", "-m", normalizedVersion);
+  await runCommand("tag", `v${normalizedVersion}`);
 }

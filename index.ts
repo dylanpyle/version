@@ -1,7 +1,7 @@
-import { inc, valid } from "https://deno.land/x/semver@v1.4.0/mod.ts";
+import { clean, inc, valid } from "https://deno.land/x/semver@v1.4.0/mod.ts";
 
 import UserError from "./user-error.ts";
-import { checkPrerequisites, commitAndTag } from "./git.ts";
+import { checkPrerequisites, commitAndTag, GitError } from "./git.ts";
 
 const fileName = "VERSION";
 
@@ -29,16 +29,18 @@ async function readVersion(): Promise<string> {
   return content;
 }
 
-async function writeVersion(version: string): Promise<void> {
-  if (!valid(version)) {
-    throw new UserError(`${version} is not a valid version string`);
+async function writeVersion(versionInput: string): Promise<void> {
+  const normalizedVersion = clean(versionInput);
+
+  if (!normalizedVersion) {
+    throw new UserError(`${versionInput} is not a valid version string`);
   }
 
   await checkPrerequisites();
 
-  await Deno.writeTextFile(fileName, version);
-  await commitAndTag(version, fileName);
-  console.log(version);
+  await Deno.writeTextFile(fileName, normalizedVersion);
+  await commitAndTag(normalizedVersion, fileName);
+  console.log(normalizedVersion);
 }
 
 enum Actions {
@@ -60,7 +62,8 @@ async function run() {
 
   switch (action) {
     case "init": {
-      const version = "1.0.0";
+      const version = params[0] || "1.0.0";
+
       await writeVersion(version);
       break;
     }
@@ -104,7 +107,7 @@ try {
   if (err instanceof Deno.errors.PermissionDenied) {
     console.error(err.message);
     Deno.exit(1);
-  } else if (err instanceof UserError) {
+  } else if (err instanceof UserError || err instanceof GitError) {
     console.error(`Error: ${err.message}`);
     Deno.exit(1);
   }
