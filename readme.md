@@ -7,26 +7,32 @@ A simple semantic versioning tool — a lightweight replacement for `npm version
 
 — the rest is up to you.
 
-## Usage
+## Installation
 
 ```
-# Create a `VERSION` file
-$ deno run -A https://deno.land/x/version/index.ts init
-
-# Increment a version
-$ deno run -A https://deno.land/x/version/index.ts patch
-$ deno run -A https://deno.land/x/version/index.ts minor
-$ deno run -A https://deno.land/x/version/index.ts major
-
-# Explicitly set a specific version
-$ deno run -A https://deno.land/x/version/index.ts set 1.2.3
-
-# Print out the current version if it exists
-$ deno run -A https://deno.land/x/version/index.ts get
+$ deno install -n version -r -A https://deno.land/x/version/index.ts
 ```
 
 Note: If you don't use `-A`, `--allow-read` and `--allow-write` are needed for
 managing the `VERSION` file and `--allow-run` for Git actions.
+
+## Usage
+
+```
+# Create a `VERSION` file
+$ version init
+
+# Increment a version
+$ version patch
+$ version minor
+$ version major
+
+# Explicitly set a specific version
+$ version set 1.2.3
+
+# Print out the current version if it exists
+$ version get
+```
 
 ## License
 
