@@ -19,8 +19,9 @@ managing the `VERSION` file and `--allow-run` for Git actions.
 ## Usage
 
 ```
-# Create a `VERSION` file
+# Create a `VERSION` file (defaults to 1.0.0 if not specified)
 $ version init
+$ version init 0.1.0
 
 # Increment a version
 $ version patch
