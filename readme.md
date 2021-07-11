@@ -35,6 +35,13 @@ $ version set 1.2.3
 $ version get
 ```
 
+If you prefer not to install the CLI locally, just substitute `$ version
+[whatever]` with:
+
+```
+$ deno run -A https://deno.land/x/version/index.ts [whatever]
+```
+
 ## License
 
 MIT
