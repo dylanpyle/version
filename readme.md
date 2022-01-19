@@ -32,11 +32,14 @@ $ version major
 $ version set 1.2.3
 
 # Print out the current version if it exists
-$ version get
+$ version get # 1.2.3
+
+# Print out the future version, without making any changes
+$ version get minor # 1.3.0
 ```
 
-If you prefer not to install the CLI locally, just substitute `$ version
-[whatever]` with:
+If you prefer not to install the CLI locally, just substitute
+`$ version [whatever]` with:
 
 ```
 $ deno run -A https://deno.land/x/version/index.ts [whatever]

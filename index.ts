@@ -69,8 +69,27 @@ async function run() {
     }
 
     case "get": {
+      const [release] = params
       const currentVersion = await readVersion();
-      console.log(currentVersion);
+      if (release) {
+        switch (release) {
+          case "major":
+          case "minor":
+          case "patch": {
+            const newVersion = inc(
+              currentVersion,
+              release
+            )
+            if (!newVersion) {
+              throw new Error("Could not increment version");
+            }
+            console.log(newVersion)
+            break;
+          }
+        }
+      } else {
+        console.log(currentVersion);
+      }
       break;
     }
 
