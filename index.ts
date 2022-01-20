@@ -1,7 +1,12 @@
 import { clean, inc, valid } from "https://deno.land/x/semver@v1.4.0/mod.ts";
 
 import UserError from "./user-error.ts";
-import { checkPrerequisites, commitAndTag, branchName, GitError } from "./git.ts";
+import {
+  branchName,
+  checkPrerequisites,
+  commitAndTag,
+  GitError,
+} from "./git.ts";
 import { shortHash } from "./hash.ts";
 
 const fileName = "VERSION";
@@ -101,15 +106,17 @@ async function run() {
       break;
     }
     case "pre": {
-      let subAction = params[0] as "" | "major" | "minor" | "patch" ?? ""
-      let identifier = params[1]
+      let subAction = params[0] as "" | "major" | "minor" | "patch" ?? "";
+      let identifier = params[1];
       if (subAction && !["major", "minor", "patch"].includes(subAction)) {
-        identifier = subAction
-        subAction = ""
+        identifier = subAction;
+        subAction = "";
       }
 
       if (identifier && !["branch", "alpha", "beta"].includes(identifier)) {
-        throw new Error("Usage: version pre <major|minor|patch>? <alpha|beta|branch>?")
+        throw new Error(
+          "Usage: version pre <major|minor|patch>? <alpha|beta|branch>?",
+        );
       }
 
       const currentVersion = await readVersion();
@@ -130,7 +137,7 @@ async function run() {
       }
 
       await writeVersion(newVersion);
-      break
+      break;
     }
   }
 }
