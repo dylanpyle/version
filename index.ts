@@ -48,6 +48,7 @@ enum Actions {
   major = "major",
   minor = "minor",
   patch = "patch",
+  pre = "pre",
   alpha = "alpha",
   beta = "beta",
   branch = "branch",
@@ -102,36 +103,38 @@ async function run() {
       await writeVersion(newVersion);
       break;
     }
-    case "alpha":
-    case "beta": {
+    case "pre": {
+      let subAction = params[0] as "" | "major" | "minor" | "patch" ?? ""
+      let identifier = params[1]
+      if (subAction && !["major", "minor", "patch"].includes(subAction)) {
+        identifier = subAction
+        subAction = ""
+      }
+
+      if (identifier && !["branch", "alpha", "beta"].includes(identifier)) {
+        throw new Error("Usage: version pre <major|minor|patch>? <alpha|beta|branch>?")
+      }
+
       const currentVersion = await readVersion();
+      if (identifier === "branch") {
+        const branch = await branchName();
+        identifier = await shortHash(branch);
+      }
+
+      console.log({ params, subAction, identifier })
       const newVersion = inc(
         currentVersion,
-        "pre",
+        `pre${subAction}`,
         undefined,
-        action as "alpha" | "beta",
+        identifier,
       );
+
       if (!newVersion) {
         throw new Error("Could not increment version");
       }
+
       await writeVersion(newVersion);
-      break;
-    }
-    case "branch": {
-      const branch = await branchName();
-      const hash = await shortHash(branch);
-      const currentVersion = await readVersion();
-      const newVersion = inc(
-        currentVersion,
-        "pre",
-        undefined,
-        hash
-      )
-      if (!newVersion) {
-        throw new Error("Could not increment version");
-      }
-      await writeVersion(newVersion);
-      break;
+      break
     }
   }
 }
