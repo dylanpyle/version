@@ -118,7 +118,6 @@ async function run() {
         identifier = await shortHash(branch);
       }
 
-      console.log({ params, subAction, identifier })
       const newVersion = inc(
         currentVersion,
         `pre${subAction}`,
