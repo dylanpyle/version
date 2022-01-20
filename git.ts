@@ -40,6 +40,10 @@ export async function checkPrerequisites(): Promise<void> {
   }
 }
 
+export async function branchName() {
+  return await runCommand("branch", "--show-current");
+}
+
 export async function commitAndTag(
   normalizedVersion: string,
   fileName: string,

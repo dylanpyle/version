@@ -1,7 +1,8 @@
 import { clean, inc, valid } from "https://deno.land/x/semver@v1.4.0/mod.ts";
 
 import UserError from "./user-error.ts";
-import { checkPrerequisites, commitAndTag, GitError } from "./git.ts";
+import { checkPrerequisites, commitAndTag, branchName, GitError } from "./git.ts";
+import { shortHash } from "./hash.ts";
 
 const fileName = "VERSION";
 
@@ -47,6 +48,9 @@ enum Actions {
   major = "major",
   minor = "minor",
   patch = "patch",
+  alpha = "alpha",
+  beta = "beta",
+  branch = "branch",
   init = "init",
   set = "set",
   get = "get",
@@ -95,6 +99,37 @@ async function run() {
         throw new Error("Could not increment version");
       }
 
+      await writeVersion(newVersion);
+      break;
+    }
+    case "alpha":
+    case "beta": {
+      const currentVersion = await readVersion();
+      const newVersion = inc(
+        currentVersion,
+        "pre",
+        undefined,
+        action as "alpha" | "beta",
+      );
+      if (!newVersion) {
+        throw new Error("Could not increment version");
+      }
+      await writeVersion(newVersion);
+      break;
+    }
+    case "branch": {
+      const branch = await branchName();
+      const hash = await shortHash(branch);
+      const currentVersion = await readVersion();
+      const newVersion = inc(
+        currentVersion,
+        "pre",
+        undefined,
+        hash
+      )
+      if (!newVersion) {
+        throw new Error("Could not increment version");
+      }
       await writeVersion(newVersion);
       break;
     }
