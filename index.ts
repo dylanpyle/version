@@ -112,9 +112,9 @@ async function run() {
         subAction = "";
       }
 
-      if (identifier && !["branch", "alpha", "beta"].includes(identifier)) {
+      if (identifier && !["alpha", "beta", "rc", "branch"].includes(identifier)) {
         throw new Error(
-          "Usage: version pre <major|minor|patch>? <alpha|beta|branch>?",
+          "Usage: version pre <major|minor|patch>? <alpha|beta|rc|branch>?",
         );
       }
 
