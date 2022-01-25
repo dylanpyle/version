@@ -52,6 +52,12 @@ enum Actions {
   get = "get",
 }
 
+enum GetSubActions {
+  major = "major",
+  minor = "minor",
+  patch = "patch",
+}
+
 const allowedActions = Object.keys(Actions);
 
 async function run() {
@@ -72,23 +78,20 @@ async function run() {
       const [release] = params
       const currentVersion = await readVersion();
       if (release) {
-        switch (release) {
-          case "major":
-          case "minor":
-          case "patch": {
-            const newVersion = inc(
-              currentVersion,
-              release
-            )
-            if (!newVersion) {
-              throw new Error("Could not increment version");
-            }
-            console.log(newVersion)
-            break;
-          }
+        const allowedSubActions = Object.keys(GetSubActions);
+        if (!allowedSubActions.includes(release)) {
+          throw new UserError(`Usage: version get <${allowedSubActions.join("|")}>?`);
         }
+        const newVersion = inc(
+          currentVersion,
+          release as GetSubActions
+        )
+        if (!newVersion) {
+          throw new Error("Could not increment version");
+        }
+        console.log(newVersion)
       } else {
-        console.log(currentVersion);
+        console.log(currentVersion)
       }
       break;
     }
