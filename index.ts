@@ -20,7 +20,7 @@ async function readVersion(): Promise<string> {
       );
     }
   }
-  
+
   if (!valid(content)) {
     throw new UserError(
       `${fileName} file contained "${content}", which is not a valid version string`,
