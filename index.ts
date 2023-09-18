@@ -10,6 +10,7 @@ async function readVersion(): Promise<string> {
 
   try {
     content = await Deno.readTextFile(fileName);
+    content = content.replace(/[\n\r\t\s]+/g, '');
   } catch (err) {
     if (err instanceof Deno.errors.PermissionDenied) {
       throw err;
