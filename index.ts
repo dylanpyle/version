@@ -7,6 +7,8 @@ import { checkPrerequisites, commitAndTag, GitError } from "./git.ts";
 const textFileName = "VERSION";
 const codeFileName = "VERSION.ts";
 
+const codeRegex = /export[\s\S]+?const[\s\S]+?VERSION\s+=\s+"(.*?)";/g;
+
 let useCodeFile: boolean;
 try {
   useCodeFile = (await Deno.stat(codeFileName)).isFile;
@@ -41,8 +43,21 @@ async function readCodeVersion(fileName: string): Promise<string> {
   let content: string;
 
   try {
-    const versionModule = await import(fileName);
-    content = versionModule.VERSION;
+    const fileContents = await Deno.readTextFile(fileName);
+    const versionMatch = codeRegex.exec(fileContents);
+    if (!versionMatch) {
+      throw new UserError(
+        `Failed to parse ${fileName}.`,
+      );
+    }
+
+    content = versionMatch[1]
+
+    if (typeof content !== "string") {
+      throw new UserError(
+        `Failed to parse ${fileName}.`,
+      );
+    }
   } catch (err) {
     if (err instanceof Deno.errors.PermissionDenied) {
       throw err;
