@@ -1,24 +1,31 @@
 import { clean, inc, valid } from "https://deno.land/x/semver@v1.4.0/mod.ts";
+import { resolve } from "https://deno.land/std@0.204.0/path/mod.ts";
 
 import UserError from "./user-error.ts";
 import { checkPrerequisites, commitAndTag, GitError } from "./git.ts";
 
-const fileName = "VERSION";
+const textFileName = "VERSION";
+const codeFileName = "VERSION.ts";
+
+let useCodeFile: boolean;
+try {
+  useCodeFile = (await Deno.stat(codeFileName)).isFile;
+} catch {
+  useCodeFile = false;
+}
+
+function getFileName() {
+  return resolve(useCodeFile ? codeFileName : textFileName);
+}
 
 async function readVersion(): Promise<string> {
-  let content: string;
+  const fileName = getFileName();
 
-  try {
-    content = await Deno.readTextFile(fileName);
-    content = content.replace(/[\n\r\t\s]+/g, '');
-  } catch (err) {
-    if (err instanceof Deno.errors.PermissionDenied) {
-      throw err;
-    } else {
-      throw new UserError(
-        `Could not read ${fileName} file. Run \`version init\` to create one`,
-      );
-    }
+  let content: string;
+  if (useCodeFile) {
+    content = await readCodeVersion(fileName);
+  } else {
+    content = await readTextVersion(fileName);
   }
 
   if (!valid(content)) {
@@ -30,7 +37,47 @@ async function readVersion(): Promise<string> {
   return content;
 }
 
+async function readCodeVersion(fileName: string): Promise<string> {
+  let content: string;
+
+  try {
+    const versionModule = await import(fileName);
+    content = versionModule.VERSION;
+  } catch (err) {
+    if (err instanceof Deno.errors.PermissionDenied) {
+      throw err;
+    } else {
+      throw new UserError(
+        `Could not read ${fileName} file. Run \`version init\` to create one`,
+      );
+    }
+  }
+
+  return content;
+}
+
+async function readTextVersion(fileName: string): Promise<string> {
+  let content: string;
+
+  try {
+    content = await Deno.readTextFile(fileName);
+    content = content.replace(/[\n\r\t\s]+/g, "");
+  } catch (err) {
+    if (err instanceof Deno.errors.PermissionDenied) {
+      throw err;
+    } else {
+      throw new UserError(
+        `Could not read ${fileName} file. Run \`version init\` to create one`,
+      );
+    }
+  }
+
+  return content;
+}
+
 async function writeVersion(versionInput: string): Promise<void> {
+  const fileName = getFileName();
+
   const normalizedVersion = clean(versionInput);
 
   if (!normalizedVersion) {
@@ -39,9 +86,29 @@ async function writeVersion(versionInput: string): Promise<void> {
 
   await checkPrerequisites();
 
-  await Deno.writeTextFile(fileName, normalizedVersion);
+  if (useCodeFile) {
+    writeCodeVersion(fileName, normalizedVersion);
+  } else {
+    writeTextVersion(fileName, normalizedVersion);
+  }
+
   await commitAndTag(normalizedVersion, fileName);
   console.log(normalizedVersion);
+}
+
+async function writeCodeVersion(
+  fileName: string,
+  normalizedVersion: string,
+): Promise<void> {
+  const versionModule = `export const VERSION = "${normalizedVersion}";\n`;
+  await Deno.writeTextFile(fileName, versionModule);
+}
+
+async function writeTextVersion(
+  fileName: string,
+  normalizedVersion: string,
+): Promise<void> {
+  await Deno.writeTextFile(fileName, normalizedVersion);
 }
 
 enum Actions {
@@ -56,10 +123,19 @@ enum Actions {
 const allowedActions = Object.keys(Actions);
 
 async function run() {
-  const [action, ...params] = Deno.args;
+  const [action, ...paramsWithFlags] = Deno.args;
   if (!allowedActions.includes(action)) {
     throw new UserError(`Usage: version <${allowedActions.join("|")}>`);
   }
+
+  if (paramsWithFlags.includes("--ts")) {
+    useCodeFile = true;
+  } else if (paramsWithFlags.includes("--txt")) {
+    useCodeFile = false;
+  }
+
+  // Remove flags from params
+  const params = paramsWithFlags.filter((param) => !param.startsWith("--"));
 
   switch (action) {
     case "init": {

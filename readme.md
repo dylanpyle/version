@@ -2,7 +2,8 @@
 
 A simple semantic versioning tool — a lightweight replacement for `npm version`.
 
-- Creates and manages a file called `VERSION` (storing the current version)
+- Creates and manages a file called `VERSION` or `VERSION.ts` (storing the
+  current version)
 - Shells out to `git` to create commits and tags for version bumps
 
 — the rest is up to you.
@@ -14,7 +15,7 @@ $ deno install -n version -r -A https://deno.land/x/version/index.ts
 ```
 
 Note: If you don't use `-A`, `--allow-read` and `--allow-write` are needed for
-managing the `VERSION` file and `--allow-run` for Git actions.
+managing the `VERSION` or `VERSION.ts` file and `--allow-run` for Git actions.
 
 ## Usage
 
@@ -22,6 +23,10 @@ managing the `VERSION` file and `--allow-run` for Git actions.
 # Create a `VERSION` file (defaults to 1.0.0 if not specified)
 $ version init
 $ version init 0.1.0
+
+# Create a `VERSION.ts` file (defaults to 1.0.0 if not specified)
+$ version init --ts
+$ version init 0.1.0 --ts
 
 # Increment a version
 $ version patch
@@ -35,8 +40,8 @@ $ version set 1.2.3
 $ version get
 ```
 
-If you prefer not to install the CLI locally, just substitute `$ version
-[whatever]` with:
+If you prefer not to install the CLI locally, just substitute
+`$ version [whatever]` with:
 
 ```
 $ deno run -A https://deno.land/x/version/index.ts [whatever]
