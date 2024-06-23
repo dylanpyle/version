@@ -44,7 +44,9 @@ export async function commitAndTag(
   normalizedVersion: string,
   fileName: string,
 ) {
+  const tagName = `v${normalizedVersion}`;
+
   await runCommand("add", fileName);
   await runCommand("commit", "-m", normalizedVersion);
-  await runCommand("tag", `v${normalizedVersion}`);
+  await runCommand("tag", tagName, "-m", normalizedVersion);
 }
